@@ -4,6 +4,7 @@ import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import stock.example.stock_manager.Model.Inventory;
 import stock.example.stock_manager.Model.Product;
@@ -60,4 +61,16 @@ public interface InventoryRepository
     ORDER BY i.quantity ASC
 """)
     List<Inventory> findProductsByWarehouseIdOrderByQuantityAsc(Long warehouseId);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+    SELECT i
+    FROM Inventory i
+    WHERE i.product = :product
+    AND i.warehouse = :warehouse
+""")
+    Optional<Inventory> findByProductAndWarehouseForUpdate(
+            @Param("product") Product product,
+            @Param("warehouse") Warehouse warehouse
+    );
 }

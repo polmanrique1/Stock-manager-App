@@ -20,4 +20,11 @@ public class MovementController {
     public List<Movement>getAllMovements(){
         return movementService.getALlMovements();
     }
+
+    @GetMapping("/recent")
+    public List<Movement>getRecentMovements(){
+        return  movementService.getMovementsThisWeek();
+    }
+
+
 }

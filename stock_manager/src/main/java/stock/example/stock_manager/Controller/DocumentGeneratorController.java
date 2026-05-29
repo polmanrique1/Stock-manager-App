@@ -18,4 +18,9 @@ public class DocumentGeneratorController {
     public ResponseEntity<byte[]> generateOrderHistory() throws IOException {
         return documentGeneratorService.downloadPDFOrderHistory();
     }
+
+    @GetMapping("/movementHistory")
+    public ResponseEntity<byte[]> generateMovementHistory() throws IOException {
+        return documentGeneratorService.downloadPDFMovementHistory();
+    }
 }

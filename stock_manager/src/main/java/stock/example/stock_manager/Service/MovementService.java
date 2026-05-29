@@ -116,49 +116,59 @@ public class MovementService {
             throw new UnableToUpdateException("Quantity must be positive");
         }
 
-        Warehouse sourceWarehouse = warehouseRepository.findById(data.getSourceWarehouseId())
-                .orElseThrow(() -> new WarehouseNorFoundException("Source warehouse not found"));
+        Long sourceId = data.getSourceWarehouseId();
+        Long destinationId = data.getDestinationWarehouseId();
 
-        Warehouse destinationWarehouse = warehouseRepository.findById(data.getDestinationWarehouseId())
-                .orElseThrow(() -> new WarehouseNorFoundException("Destination warehouse not found"));
+        // Order the warehouse IDs to prevent deadlocks when locking the inventory records
+        Long firstWarehouseId = Math.min(sourceId, destinationId);
+        Long secondWarehouseId = Math.max(sourceId, destinationId);
+
+        Warehouse firstWarehouse = warehouseRepository.findById(firstWarehouseId)
+                .orElseThrow(() -> new WarehouseNorFoundException("Warehouse not found"));
+
+        Warehouse secondWarehouse = warehouseRepository.findById(secondWarehouseId)
+                .orElseThrow(() -> new WarehouseNorFoundException("Warehouse not found"));
+
+
+        Warehouse sourceWarehouse =
+                sourceId.equals(firstWarehouseId) ? firstWarehouse : secondWarehouse;
+
+        Warehouse destinationWarehouse =
+                destinationId.equals(firstWarehouseId) ? firstWarehouse : secondWarehouse;
 
         Product product = productRepository.findById(data.getProductId())
                 .orElseThrow(() -> new ProductNotFoundException(data.getProductId()));
 
         Inventory sourceInventory = inventoryRepository
-                .findByProductAndWarehouse(product, sourceWarehouse)
+                .findByProductAndWarehouseForUpdate(product, sourceWarehouse)
                 .orElseThrow(() -> new UnableToUpdateException("No stock in source warehouse"));
+
+        Inventory destinationInventory = inventoryRepository
+                .findByProductAndWarehouseForUpdate(product, destinationWarehouse)
+                .orElse(null);
 
         if (sourceInventory.getQuantity() < data.getQuantity()) {
             throw new UnableToUpdateException("Insufficient stock");
         }
 
-        Inventory destinationInventory = inventoryRepository
-                .findByProductAndWarehouse(product, destinationWarehouse)
-                .orElse(null);
-
-        // Actualizar cantidades
-        sourceInventory.setQuantity(sourceInventory.getQuantity() - data.getQuantity());
+        sourceInventory.setQuantity(
+                sourceInventory.getQuantity() - data.getQuantity()
+        );
 
         if (destinationInventory == null) {
             destinationInventory = new Inventory();
             destinationInventory.setProduct(product);
             destinationInventory.setWarehouse(destinationWarehouse);
             destinationInventory.setQuantity(data.getQuantity());
-            inventoryRepository.save(destinationInventory); // ✅ Guardar nuevo inventory
+
         } else {
-            destinationInventory.setQuantity(destinationInventory.getQuantity() + data.getQuantity());
-            // ✅ No necesita save() porque ya está gestionada, pero explícito no duele
+            destinationInventory.setQuantity(
+                    destinationInventory.getQuantity() + data.getQuantity()
+            );
         }
 
-        // ✅ Guardar explícitamente los cambios
         inventoryRepository.save(sourceInventory);
-
-        // Si destinationInventory ya existe y está gestionada, Hibernate detectará el cambio
-        // Pero por seguridad, si no es nueva, también la guardamos
-        if (destinationInventory.getId() != null) {
-            inventoryRepository.save(destinationInventory);
-        }
+        inventoryRepository.save(destinationInventory);
 
         Movement movement = new Movement();
         movement.setType("transfer");
@@ -166,8 +176,12 @@ public class MovementService {
 
         Movement savedMovement = movementRepository.save(movement);
 
-        return new APIResponse<>("Warehouse transfer completed successfully", savedMovement);
+        return new APIResponse<>(
+                "Warehouse transfer completed successfully",
+                savedMovement
+        );
     }
+
     @Transactional(readOnly = true)
     public List<Movement> getALlMovements(){
         return movementRepository.findAll();

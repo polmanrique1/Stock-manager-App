@@ -29,7 +29,7 @@ public class InventoryService {
     }
 
     /**
-     * Devuelve los inventarios por id del producto
+     * Returns the inventories by product ID, allowing to know the quantity of that product available in each warehouse.
      * @param productId
      * @return
      */
@@ -44,7 +44,7 @@ public class InventoryService {
     }
 
     /**
-     * Devuelve los inventarios de un almacén específico, lo que permite conocer la cantidad de cada producto disponible en ese almacén.
+     * Returns the inventories by warehouse ID, allowing to know the quantity of each product available in that warehouse.
      * @param warehouseId
      * @return
      */
@@ -54,7 +54,7 @@ public class InventoryService {
     }
 
     /**
-     * Devuelve la cantidad de el producto por almacen
+     * Returns the quantity of product by warehouse
      * @param request
      * @return
      */

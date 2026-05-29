@@ -16,6 +16,8 @@ import stock.example.stock_manager.Model.Order;
 import stock.example.stock_manager.Model.Product;
 import stock.example.stock_manager.Repository.OrderRepository;
 import stock.example.stock_manager.Repository.ProductRepository;
+import stock.example.stock_manager.Model.Movement;
+import stock.example.stock_manager.Repository.MovementRepository;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -28,6 +30,7 @@ public class DocumentGeneratorService {
 
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
+    private final MovementRepository movementRepository;
 
     public ResponseEntity<byte[]> downloadPDFOrderHistory() throws IOException {
 
@@ -38,7 +41,7 @@ public class DocumentGeneratorService {
         PdfDocument pdf = new PdfDocument(writer);
         Document document = new Document(pdf);
 
-        // ===== HEADER =====
+        // HEADER
         Paragraph header = new Paragraph("ORDER HISTORY REPORT")
                 .setBold()
                 .setFontSize(18);
@@ -49,7 +52,7 @@ public class DocumentGeneratorService {
                 .setBorderBottom(new SolidBorder(1))
                 .setMarginBottom(15));
 
-        // ===== BODY =====
+        //  BODY
         for (Order order : orders) {
 
             document.add(new Paragraph("Order #" + order.getId())
@@ -91,6 +94,73 @@ public class DocumentGeneratorService {
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=order-history.pdf")
                 .header(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS, HttpHeaders.CONTENT_DISPOSITION)
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdfBytes);
+    }
+
+    public ResponseEntity<byte[]> downloadPDFMovementHistory() throws IOException {
+
+        List<Movement> movements = movementRepository.findAll();
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        PdfWriter writer = new PdfWriter(baos);
+        PdfDocument pdf = new PdfDocument(writer);
+        Document document = new Document(pdf);
+
+        // HEADER
+        Paragraph header = new Paragraph("MOVEMENT HISTORY REPORT")
+                .setBold()
+                .setFontSize(18);
+
+        document.add(header);
+
+        document.add(new Paragraph("")
+                .setBorderBottom(new SolidBorder(1))
+                .setMarginBottom(15));
+
+        // BODY
+        for (Movement movement : movements) {
+
+            document.add(new Paragraph("Movement #" + movement.getId())
+                    .setBold()
+                    .setFontSize(14));
+
+            // Type
+            document.add(new Paragraph("Type: " + movement.getType()));
+
+            // Product
+            String productName = movement.getProduct() != null
+                    ? movement.getProduct().getName()
+                    : "Unknown product";
+
+            document.add(new Paragraph("Product: " + productName));
+
+            // Product ID
+            Long productId = movement.getProduct() != null
+                    ? movement.getProduct().getId()
+                    : null;
+
+            document.add(new Paragraph("Product ID: " + productId));
+
+            // Date
+            document.add(new Paragraph("Date: " + movement.getDate()));
+
+            // Separator
+            document.add(new Paragraph("")
+                    .setBorderBottom(new SolidBorder(0.5f))
+                    .setMarginTop(10)
+                    .setMarginBottom(10));
+        }
+
+        document.close();
+
+        byte[] pdfBytes = baos.toByteArray();
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=movement-history.pdf")
+                .header(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS,
+                        HttpHeaders.CONTENT_DISPOSITION)
                 .contentType(MediaType.APPLICATION_PDF)
                 .body(pdfBytes);
     }
