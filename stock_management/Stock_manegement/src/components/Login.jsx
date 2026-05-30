@@ -51,7 +51,6 @@ export default function Login() {
 
             console.log("Login exitoso", response);
 
-            // REDIRECCIÓN
             navigate("/dashboard/products");
 
         } catch (error) {
@@ -122,6 +121,8 @@ export default function Login() {
                         />
 
                     </div>
+
+                    <a href="/register">Register</a>
 
                     <button
                         type="submit"

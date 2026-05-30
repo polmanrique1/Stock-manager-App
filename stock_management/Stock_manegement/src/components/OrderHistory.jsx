@@ -2,13 +2,11 @@ import { useState, useEffect } from "react";
 
 export default function OrderHistory() {
     const [orders, setOrders] = useState([]);
-    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         async function fetchdata() {
             const token = localStorage.getItem("token");
 
-            try {
                 const data = await fetch("http://localhost:8080/order", {
                     method: "GET",
                     headers: {
@@ -18,23 +16,61 @@ export default function OrderHistory() {
                 });
 
                 const response = await data.json();
-                // Filtrar solo órdenes aceptadas
+
                 const acceptedOrders = response.filter(order => order.accepted === true);
-                // Ordenar por fecha (más reciente primero)
-                acceptedOrders.sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate));
+
+                acceptedOrders.sort(
+                    (a, b) => new Date(b.orderDate) - new Date(a.orderDate)
+                );
+
                 setOrders(acceptedOrders);
-            } catch (error) {
-                console.error("Error fetching orders:", error);
-            } finally {
-                setLoading(false);
-            }
+
+            
         }
 
         fetchdata();
     }, []);
 
+    const downloadHistoryPDF = async () => {
+        const token = localStorage.getItem("token");
+
+        try {
+            const response = await fetch(
+                "http://localhost:8080/document/orderHistory",
+                {
+                    method: "GET",
+                    headers: {
+                        "Authorization": `Bearer ${token}`
+                    }
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error("Error downloading PDF");
+            }
+
+            const blob = await response.blob();
+
+            const url = window.URL.createObjectURL(blob);
+
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = "order-history.pdf";
+
+            document.body.appendChild(link);
+            link.click();
+
+            link.remove();
+            window.URL.revokeObjectURL(url);
+
+        } catch (error) {
+            console.error("Error downloading PDF:", error);
+        }
+    };
+
     const formatDate = (dateString) => {
         const date = new Date(dateString);
+
         return date.toLocaleDateString('es-ES', {
             day: '2-digit',
             month: '2-digit',
@@ -62,87 +98,127 @@ export default function OrderHistory() {
         }
     };
 
-    if (loading) {
-        return (
-            <div className="min-h-screen bg-gray-50 flex justify-center items-center">
-                <p className="text-gray-500">Cargando historial...</p>
-            </div>
-        );
-    }
 
     return (
         <div className="min-h-screen bg-gray-50 p-6">
             <div className="max-w-3xl mx-auto">
-                {/* Header con título más grande */}
-                <div className="mb-8">
-                    <h1 className="text-4xl font-bold text-gray-800">Historial</h1>
-                    <p className="text-gray-400 text-sm mt-2">Órdenes completadas</p>
+
+                <div className="mb-8 flex justify-between items-center">
+                    <div>
+                        <h1 className="text-4xl font-bold text-gray-800">
+                            Historial
+                        </h1>
+
+                        <p className="text-gray-400 text-sm mt-2">
+                            Órdenes completadas
+                        </p>
+                    </div>
+
+                    <button
+                        onClick={downloadHistoryPDF}
+                        className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition"
+                    >
+                        Descargar PDF
+                    </button>
                 </div>
 
-                {/* Lista de órdenes */}
                 {orders.length === 0 ? (
                     <div className="bg-white rounded-lg border p-8 text-center">
-                        <p className="text-gray-400">No hay órdenes en el historial</p>
+                        <p className="text-gray-400">
+                            No hay órdenes en el historial
+                        </p>
                     </div>
                 ) : (
                     <div className="space-y-3">
                         {orders.map((order) => (
-                            <div key={order.id} className="bg-white rounded-lg border p-4 hover:shadow transition-shadow">
-                                {/* Fila superior: tipo y prioridad */}
+                            <div
+                                key={order.id}
+                                className="bg-white rounded-lg border p-4 hover:shadow transition-shadow"
+                            >
+
                                 <div className="flex justify-between items-start mb-3">
                                     <div>
                                         <h3 className="font-medium text-gray-800">
                                             {getTypeText(order.movementData?.type)}
                                         </h3>
+
                                         <p className="text-xs text-gray-400 mt-1">
                                             {formatDate(order.orderDate)}
                                         </p>
                                     </div>
+
                                     <span className={`text-xs px-2 py-1 rounded ${getPriorityColor(order.priority)}`}>
                                         {order.priority}
                                     </span>
                                 </div>
 
-                                {/* Usuario responsable */}
                                 {order.userResponsable && (
                                     <div className="mb-3 pb-2 border-b border-gray-100">
                                         <div className="flex justify-between text-sm">
-                                            <span className="text-gray-400">Responsable:</span>
+                                            <span className="text-gray-400">
+                                                Responsable:
+                                            </span>
+
                                             <span className="text-gray-700 font-medium">
-                                                {order.userResponsable.username || order.userResponsable.email}
+                                                {order.userResponsable.username ||
+                                                    order.userResponsable.email}
                                             </span>
                                         </div>
                                     </div>
                                 )}
 
-                                {/* Detalles del movimiento */}
+
                                 <div className="text-sm text-gray-600 space-y-1">
+
                                     <div className="flex justify-between">
-                                        <span className="text-gray-400">Producto ID:</span>
-                                        <span>{order.movementData?.productId}</span>
+                                        <span className="text-gray-400">
+                                            Producto ID:
+                                        </span>
+
+                                        <span>
+                                            {order.movementData?.productId}
+                                        </span>
                                     </div>
+
                                     <div className="flex justify-between">
-                                        <span className="text-gray-400">Cantidad:</span>
-                                        <span>{order.movementData?.quantity} unidades</span>
+                                        <span className="text-gray-400">
+                                            Cantidad:
+                                        </span>
+
+                                        <span>
+                                            {order.movementData?.quantity} unidades
+                                        </span>
                                     </div>
+
                                     {order.movementData?.sourceWarehouseId > 0 && (
                                         <div className="flex justify-between">
-                                            <span className="text-gray-400">Almacén origen:</span>
-                                            <span>#{order.movementData.sourceWarehouseId}</span>
+                                            <span className="text-gray-400">
+                                                Almacén origen:
+                                            </span>
+
+                                            <span>
+                                                #{order.movementData.sourceWarehouseId}
+                                            </span>
                                         </div>
                                     )}
+
                                     {order.movementData?.destinationWarehouseId > 0 && (
                                         <div className="flex justify-between">
-                                            <span className="text-gray-400">Almacén destino:</span>
-                                            <span>#{order.movementData.destinationWarehouseId}</span>
+                                            <span className="text-gray-400">
+                                                Almacén destino:
+                                            </span>
+
+                                            <span>
+                                                #{order.movementData.destinationWarehouseId}
+                                            </span>
                                         </div>
                                     )}
                                 </div>
 
-                                {/* Número de orden */}
                                 <div className="mt-3 pt-2 border-t text-xs text-gray-300">
                                     Orden #{order.id}
                                 </div>
+
                             </div>
                         ))}
                     </div>

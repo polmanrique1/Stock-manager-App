@@ -11,6 +11,7 @@ import TransferForm from "./components/TransferForm";
 import OrdersList from "./components/OrdersList";
 import OrderDetails from "./components/OrderDetails";
 import OrderHistory from "./components/OrderHistory";
+import Register from "./components/Register";
 
 function App() {
 
@@ -18,6 +19,8 @@ function App() {
             <Routes>
                 {/* LOGIN */}
                 <Route path="/"element={<Login />} />
+                <Route path="/register"element={<Register />} />
+
 
                 <Route path="/dashboard" element={<MainDashboard />}>
                     <Route path="productsStock" element={<ProductList />}/>

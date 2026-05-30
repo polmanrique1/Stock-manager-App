@@ -6,28 +6,32 @@ export default function ProductList() {
     const [warehouses, setWarehouses] = useState([]);
     const [selectedWarehouse, setSelectedWarehouse] = useState(1);
 
+    // asc | desc
+    const [sortOrder, setSortOrder] = useState("");
+
     useEffect(() => {
+
         async function fetchWarehouses() {
-                const token = localStorage.getItem("token");
 
-                const response = await fetch(
-                    "http://localhost:8080/warehouse",
-                    {
-                        headers: {
-                            "Authorization": `Bearer ${token}`,
-                            "Content-Type": "application/json"
-                        }
+            const token = localStorage.getItem("token");
+
+            const response = await fetch(
+                "http://localhost:8080/warehouse",
+                {
+                    headers: {
+                        "Authorization": `Bearer ${token}`,
+                        "Content-Type": "application/json"
                     }
-                );
-
-                if (!response.ok) {
-                    throw new Error("Error cargando almacenes");
                 }
-                const data = await response.json();
+            );
 
-                setWarehouses(data);
+            if (!response.ok) {
+                throw new Error("Error cargando almacenes");
+            }
 
-            
+            const data = await response.json();
+
+            setWarehouses(data);
         }
 
         fetchWarehouses();
@@ -35,31 +39,41 @@ export default function ProductList() {
     }, []);
 
     useEffect(() => {
+
         async function fetchProducts() {
+
             const token = localStorage.getItem("token");
 
-                const response = await fetch(
-                    `http://localhost:8080/inventory/${selectedWarehouse}`,
-                    {
-                        headers: {
-                            "Authorization": `Bearer ${token}`,
-                            "Content-Type": "application/json"
-                        }
-                    }
-                );
+            let endpoint = `http://localhost:8080/inventory/${selectedWarehouse}`;
 
-                if (!response.ok) {
-                    throw new Error("Error cargando productos");
+            // FILTROS
+            if (sortOrder === "asc") {
+                endpoint = `http://localhost:8080/inventory/${selectedWarehouse}/qnt/asc`;
+            }
+
+            if (sortOrder === "desc") {
+                endpoint = `http://localhost:8080/inventory/${selectedWarehouse}/qnt/desc`;
+            }
+
+            const response = await fetch(endpoint, {
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json"
                 }
+            });
 
-                const data = await response.json();
+            if (!response.ok) {
+                throw new Error("Error cargando productos");
+            }
 
-                setProducts(data);
+            const data = await response.json();
+
+            setProducts(data);
         }
 
         fetchProducts();
 
-    }, [selectedWarehouse]);
+    }, [selectedWarehouse, sortOrder]);
 
     return (
 
@@ -71,9 +85,10 @@ export default function ProductList() {
                     Lista de Productos
                 </h2>
 
-                {/* SELECT */}
-                <div className="mb-8 flex items-center gap-4">
+                {/* SELECT + FILTROS */}
+                <div className="mb-8 flex flex-col md:flex-row md:items-center gap-4">
 
+                    {/* SELECT ALMACÉN */}
                     <select
                         value={selectedWarehouse}
                         onChange={(e) => setSelectedWarehouse(e.target.value)}
@@ -92,6 +107,45 @@ export default function ProductList() {
                         ))}
 
                     </select>
+
+                    {/* BOTONES FILTRO */}
+                    <div className="flex gap-3">
+
+                        <button
+                            onClick={() => setSortOrder("asc")}
+                            className={`px-4 py-2 rounded-xl transition font-medium
+                                ${sortOrder === "asc"
+                                    ? "bg-blue-600 text-white"
+                                    : "bg-white border hover:bg-gray-50"
+                                }`}
+                        >
+                            Stock ↑
+                        </button>
+
+                        <button
+                            onClick={() => setSortOrder("desc")}
+                            className={`px-4 py-2 rounded-xl transition font-medium
+                                ${sortOrder === "desc"
+                                    ? "bg-blue-600 text-white"
+                                    : "bg-white border hover:bg-gray-50"
+                                }`}
+                        >
+                            Stock ↓
+                        </button>
+
+                        {/* RESET */}
+                        <button
+                            onClick={() => setSortOrder("")}
+                            className={`px-4 py-2 rounded-xl transition font-medium
+                                ${sortOrder === ""
+                                    ? "bg-black text-white"
+                                    : "bg-white border hover:bg-gray-50"
+                                }`}
+                        >
+                            Reset
+                        </button>
+
+                    </div>
 
                 </div>
 
