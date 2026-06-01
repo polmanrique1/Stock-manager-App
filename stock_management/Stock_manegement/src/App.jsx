@@ -12,6 +12,7 @@ import OrdersList from "./components/OrdersList";
 import OrderDetails from "./components/OrderDetails";
 import OrderHistory from "./components/OrderHistory";
 import Register from "./components/Register";
+import MovementHistory from "./components/MovementHistory";
 
 function App() {
 
@@ -31,7 +32,9 @@ function App() {
                     <Route path="transForm" element={<TransferForm />}/>
                     <Route path="orderList" element={<OrdersList />}/>
                     <Route path="orderDetail/:id" element={<OrderDetails />} />
-                    <Route path="history" element={<OrderHistory />} />
+                    <Route path="orderHistory" element={<OrderHistory />} />
+                    <Route path="movementHistory" element={<MovementHistory />} />
+
 
                     
                 </Route>

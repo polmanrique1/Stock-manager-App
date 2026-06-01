@@ -92,13 +92,13 @@ export default function AdditionForm() {
 
         if (!user) {
             setMessageType("error");
-            setMessage("Usuario no autenticado");
+            setMessage("User not authenticated");
             return;
         }
 
         if (!formData.productId || !formData.warehouseId || !formData.quantity) {
             setMessageType("error");
-            setMessage("Por favor, completa todos los campos");
+            setMessage("Please complete all fields");
             return;
         }
 
@@ -132,7 +132,7 @@ export default function AdditionForm() {
 
             if (response.ok) {
                 setMessageType("success");
-                setMessage("Orden creada correctamente");
+                setMessage("Order created successfully");
                 setFormData({
                     priority: "LOW",
                     productId: "",
@@ -141,11 +141,11 @@ export default function AdditionForm() {
                 });
             } else {
                 setMessageType("error");
-                setMessage("Error creando la orden");
+                setMessage("Error creating order");
             }
         } catch (error) {
             setMessageType("error");
-            setMessage("Error de conexión");
+            setMessage("Connection error");
         } finally {
             setLoading(false);
         }
@@ -155,7 +155,7 @@ export default function AdditionForm() {
         <div className="min-h-screen bg-gray-100 flex justify-center items-center p-8">
             <div className="bg-white w-full max-w-xl rounded-lg shadow-md p-6">
                 <h2 className="text-2xl font-bold mb-6 text-gray-800">
-                    Añadir Stock
+                    Add Stock
                 </h2>
 
                 <form onSubmit={onSubmit} className="flex flex-col gap-4">
@@ -176,7 +176,7 @@ export default function AdditionForm() {
                         onChange={handleChange}
                         className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
                     >
-                        <option value="">Producto</option>
+                        <option value="">Product</option>
                         {products.map(p => (
                             <option key={p.id} value={p.id}>{p.name}</option>
                         ))}
@@ -199,7 +199,7 @@ export default function AdditionForm() {
                         name="quantity"
                         value={formData.quantity}
                         onChange={handleChange}
-                        placeholder="Cantidad"
+                        placeholder="Quantity"
                         className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
                     />
 
@@ -212,7 +212,7 @@ export default function AdditionForm() {
                                 : 'bg-blue-500 hover:bg-blue-600 text-white'
                         }`}
                     >
-                        {loading ? "Procesando..." : "Crear Orden"}
+                        {loading ? "Processing..." : "Create Order"}
                     </button>
 
                     {message && (

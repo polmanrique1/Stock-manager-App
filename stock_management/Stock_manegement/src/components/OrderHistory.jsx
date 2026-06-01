@@ -4,31 +4,29 @@ export default function OrderHistory() {
     const [orders, setOrders] = useState([]);
 
     useEffect(() => {
-        async function fetchdata() {
+        async function fetchData() {
             const token = localStorage.getItem("token");
 
-                const data = await fetch("http://localhost:8080/order", {
-                    method: "GET",
-                    headers: {
-                        "Authorization": `Bearer ${token}`,
-                        "Content-Type": "application/json"
-                    }
-                });
+            const res = await fetch("http://localhost:8080/order", {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                }
+            });
 
-                const response = await data.json();
+            const data = await res.json();
 
-                const acceptedOrders = response.filter(order => order.accepted === true);
+            const acceptedOrders = data.filter(order => order.accepted === true);
 
-                acceptedOrders.sort(
-                    (a, b) => new Date(b.orderDate) - new Date(a.orderDate)
-                );
+            acceptedOrders.sort(
+                (a, b) => new Date(b.orderDate) - new Date(a.orderDate)
+            );
 
-                setOrders(acceptedOrders);
-
-            
+            setOrders(acceptedOrders);
         }
 
-        fetchdata();
+        fetchData();
     }, []);
 
     const downloadHistoryPDF = async () => {
@@ -50,7 +48,6 @@ export default function OrderHistory() {
             }
 
             const blob = await response.blob();
-
             const url = window.URL.createObjectURL(blob);
 
             const link = document.createElement("a");
@@ -71,74 +68,73 @@ export default function OrderHistory() {
     const formatDate = (dateString) => {
         const date = new Date(dateString);
 
-        return date.toLocaleDateString('es-ES', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
+        return date.toLocaleDateString("en-US", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit"
         });
     };
 
     const getTypeText = (type) => {
-        switch(type) {
-            case 'addition': return 'Adición de stock';
-            case 'sell': return 'Venta';
-            case 'transfer': return 'Transferencia';
+        switch (type) {
+            case "addition": return "Stock addition";
+            case "sell": return "Sale";
+            case "transfer": return "Transfer";
             default: return type;
         }
     };
 
     const getPriorityColor = (priority) => {
-        switch(priority) {
-            case 'HIGH': return 'bg-red-100 text-red-800';
-            case 'MEDIUM': return 'bg-orange-100 text-orange-800';
-            case 'LOW': return 'bg-green-100 text-green-800';
-            default: return 'bg-gray-100 text-gray-800';
+        switch (priority) {
+            case "HIGH": return "bg-red-100 text-red-800";
+            case "MEDIUM": return "bg-orange-100 text-orange-800";
+            case "LOW": return "bg-green-100 text-green-800";
+            default: return "bg-gray-100 text-gray-800";
         }
     };
 
-
     return (
-        <div className="min-h-screen bg-gray-50 p-6">
+        <div className="min-h-screen bg-gray-100 p-6">
             <div className="max-w-3xl mx-auto">
 
                 <div className="mb-8 flex justify-between items-center">
                     <div>
-                        <h1 className="text-4xl font-bold text-gray-800">
-                            Historial
+                        <h1 className="text-3xl font-bold text-gray-800">
+                            History
                         </h1>
-
-                        <p className="text-gray-400 text-sm mt-2">
-                            Órdenes completadas
+                        <p className="text-gray-500 text-sm mt-2">
+                            Completed orders
                         </p>
                     </div>
 
                     <button
                         onClick={downloadHistoryPDF}
-                        className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition"
+                        className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors"
                     >
-                        Descargar PDF
+                        Download PDF
                     </button>
                 </div>
 
                 {orders.length === 0 ? (
-                    <div className="bg-white rounded-lg border p-8 text-center">
-                        <p className="text-gray-400">
-                            No hay órdenes en el historial
+                    <div className="bg-white rounded-2xl shadow p-8 text-center">
+                        <p className="text-gray-500">
+                            No orders in history
                         </p>
                     </div>
                 ) : (
                     <div className="space-y-3">
+
                         {orders.map((order) => (
                             <div
                                 key={order.id}
-                                className="bg-white rounded-lg border p-4 hover:shadow transition-shadow"
+                                className="bg-white rounded-2xl shadow p-5 hover:shadow-md transition"
                             >
 
                                 <div className="flex justify-between items-start mb-3">
                                     <div>
-                                        <h3 className="font-medium text-gray-800">
+                                        <h3 className="font-semibold text-gray-800">
                                             {getTypeText(order.movementData?.type)}
                                         </h3>
 
@@ -147,7 +143,7 @@ export default function OrderHistory() {
                                         </p>
                                     </div>
 
-                                    <span className={`text-xs px-2 py-1 rounded ${getPriorityColor(order.priority)}`}>
+                                    <span className={`text-xs px-2 py-1 rounded-lg ${getPriorityColor(order.priority)}`}>
                                         {order.priority}
                                     </span>
                                 </div>
@@ -156,7 +152,7 @@ export default function OrderHistory() {
                                     <div className="mb-3 pb-2 border-b border-gray-100">
                                         <div className="flex justify-between text-sm">
                                             <span className="text-gray-400">
-                                                Responsable:
+                                                Responsible:
                                             </span>
 
                                             <span className="text-gray-700 font-medium">
@@ -167,60 +163,40 @@ export default function OrderHistory() {
                                     </div>
                                 )}
 
-
                                 <div className="text-sm text-gray-600 space-y-1">
 
                                     <div className="flex justify-between">
-                                        <span className="text-gray-400">
-                                            Producto ID:
-                                        </span>
-
-                                        <span>
-                                            {order.movementData?.productId}
-                                        </span>
+                                        <span className="text-gray-400">Product ID:</span>
+                                        <span>{order.movementData?.productId}</span>
                                     </div>
 
                                     <div className="flex justify-between">
-                                        <span className="text-gray-400">
-                                            Cantidad:
-                                        </span>
-
-                                        <span>
-                                            {order.movementData?.quantity} unidades
-                                        </span>
+                                        <span className="text-gray-400">Quantity:</span>
+                                        <span>{order.movementData?.quantity}</span>
                                     </div>
 
                                     {order.movementData?.sourceWarehouseId > 0 && (
                                         <div className="flex justify-between">
-                                            <span className="text-gray-400">
-                                                Almacén origen:
-                                            </span>
-
-                                            <span>
-                                                #{order.movementData.sourceWarehouseId}
-                                            </span>
+                                            <span className="text-gray-400">Source warehouse:</span>
+                                            <span>#{order.movementData.sourceWarehouseId}</span>
                                         </div>
                                     )}
 
                                     {order.movementData?.destinationWarehouseId > 0 && (
                                         <div className="flex justify-between">
-                                            <span className="text-gray-400">
-                                                Almacén destino:
-                                            </span>
-
-                                            <span>
-                                                #{order.movementData.destinationWarehouseId}
-                                            </span>
+                                            <span className="text-gray-400">Destination warehouse:</span>
+                                            <span>#{order.movementData.destinationWarehouseId}</span>
                                         </div>
                                     )}
                                 </div>
 
                                 <div className="mt-3 pt-2 border-t text-xs text-gray-300">
-                                    Orden #{order.id}
+                                    Order #{order.id}
                                 </div>
 
                             </div>
                         ))}
+
                     </div>
                 )}
             </div>

@@ -42,12 +42,9 @@ export default function OrderDetails() {
                 const orderJson = await orderRes.json();
                 const realOrder = orderJson.data ?? orderJson;
 
-                if (isMounted) {
-                    setOrder(realOrder);
-                }
+                if (isMounted) setOrder(realOrder);
 
                 const movement = realOrder?.movementData;
-
                 if (!movement) {
                     if (isMounted) setLoading(false);
                     return;
@@ -60,11 +57,7 @@ export default function OrderDetails() {
                     try {
                         const productRes = await fetch(
                             `http://localhost:8080/product/${productId}`,
-                            {
-                                headers: {
-                                    "Authorization": `Bearer ${token}`
-                                }
-                            }
+                            { headers: { "Authorization": `Bearer ${token}` } }
                         );
 
                         if (productRes.ok) {
@@ -73,7 +66,7 @@ export default function OrderDetails() {
                         } else {
                             if (isMounted) setProduct(null);
                         }
-                    } catch (err) {
+                    } catch {
                         if (isMounted) setProduct(null);
                     }
                 }
@@ -83,11 +76,7 @@ export default function OrderDetails() {
                     try {
                         const sourceRes = await fetch(
                             `http://localhost:8080/warehouse/${sourceWarehouseId}`,
-                            {
-                                headers: {
-                                    "Authorization": `Bearer ${token}`
-                                }
-                            }
+                            { headers: { "Authorization": `Bearer ${token}` } }
                         );
 
                         if (sourceRes.ok) {
@@ -96,7 +85,7 @@ export default function OrderDetails() {
                         } else {
                             if (isMounted) setSourceWarehouse(null);
                         }
-                    } catch (err) {
+                    } catch {
                         if (isMounted) setSourceWarehouse(null);
                     }
                 } else {
@@ -108,11 +97,7 @@ export default function OrderDetails() {
                     try {
                         const destRes = await fetch(
                             `http://localhost:8080/warehouse/${destinationWarehouseId}`,
-                            {
-                                headers: {
-                                    "Authorization": `Bearer ${token}`
-                                }
-                            }
+                            { headers: { "Authorization": `Bearer ${token}` } }
                         );
 
                         if (destRes.ok) {
@@ -121,7 +106,7 @@ export default function OrderDetails() {
                         } else {
                             if (isMounted) setDestinationWarehouse(null);
                         }
-                    } catch (err) {
+                    } catch {
                         if (isMounted) setDestinationWarehouse(null);
                     }
                 } else {
@@ -139,22 +124,17 @@ export default function OrderDetails() {
         }
 
         fetchAll();
-
-        return () => {
-            isMounted = false;
-        };
+        return () => { isMounted = false; };
     }, [id]);
 
     const handleAccept = async () => {
-        if (!window.confirm("¿Estás seguro de que quieres aceptar esta orden?")) {
-            return;
-        }
+        if (!window.confirm("Are you sure you want to accept this order?")) return;
 
         setProcessing(true);
         const token = localStorage.getItem("token");
 
         try {
-            const response = await fetch(`http://localhost:8080/orderProcess/accept/${id}`, {
+            await fetch(`http://localhost:8080/orderProcess/accept/${id}`, {
                 method: "POST",
                 headers: {
                     "Authorization": `Bearer ${token}`,
@@ -162,11 +142,9 @@ export default function OrderDetails() {
                 }
             });
 
-            // Redirigir directamente sin mostrar mensaje
             navigate("/dashboard/orderList");
-            
-        } catch (err) {
-            // En caso de error, también redirigir
+
+        } catch {
             navigate("/dashboard/orderList");
         } finally {
             setProcessing(false);
@@ -174,15 +152,13 @@ export default function OrderDetails() {
     };
 
     const handleReject = async () => {
-        if (!window.confirm("¿Estás seguro de que quieres rechazar esta orden?")) {
-            return;
-        }
+        if (!window.confirm("Are you sure you want to reject this order?")) return;
 
         setProcessing(true);
         const token = localStorage.getItem("token");
 
         try {
-            const response = await fetch(`http://localhost:8080/orderProcess/reject/${id}`, {
+            await fetch(`http://localhost:8080/orderProcess/reject/${id}`, {
                 method: "POST",
                 headers: {
                     "Authorization": `Bearer ${token}`,
@@ -190,11 +166,9 @@ export default function OrderDetails() {
                 }
             });
 
-            // Redirigir directamente sin mostrar mensaje
             navigate("/dashboard/orderList");
-            
-        } catch (err) {
-            // En caso de error, también redirigir
+
+        } catch {
             navigate("/dashboard/orderList");
         } finally {
             setProcessing(false);
@@ -204,7 +178,7 @@ export default function OrderDetails() {
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50">
-                <p className="text-gray-600">Cargando...</p>
+                <p className="text-gray-600">Loading...</p>
             </div>
         );
     }
@@ -214,11 +188,11 @@ export default function OrderDetails() {
             <div className="min-h-screen flex items-center justify-center bg-gray-50">
                 <div className="text-center">
                     <p className="text-red-600 mb-4">Error: {error}</p>
-                    <button 
+                    <button
                         onClick={() => window.location.reload()}
-                        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                     >
-                        Reintentar
+                        Retry
                     </button>
                 </div>
             </div>
@@ -226,179 +200,137 @@ export default function OrderDetails() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            {/* Header con botones */}
+        <div className="min-h-screen bg-gray-100">
+
             <div className="bg-white border-b shadow-sm">
-                <div className="max-w-7xl mx-auto px-4 py-4">
-                    <div className="flex justify-between items-center">
-                        <h1 className="text-2xl font-bold text-gray-900">
-                            Detalles de la Orden #{id}
-                        </h1>
-                        <div className="flex gap-3">
-                            <button
-                                onClick={handleReject}
-                                disabled={processing || order?.accepted === true}
-                                className={`
-                                    px-4 py-2 rounded font-semibold transition-colors
-                                    ${processing || order?.accepted === true
-                                        ? 'bg-gray-300 cursor-not-allowed'
-                                        : 'bg-red-600 hover:bg-red-700 text-white'
-                                    }
-                                `}
-                            >
-                                {processing ? "..." : "Rechazar"}
-                            </button>
-                            <button
-                                onClick={handleAccept}
-                                disabled={processing || order?.accepted === true}
-                                className={`
-                                    px-4 py-2 rounded font-semibold transition-colors
-                                    ${processing || order?.accepted === true
-                                        ? 'bg-gray-300 cursor-not-allowed'
-                                        : 'bg-green-600 hover:bg-green-700 text-white'
-                                    }
-                                `}
-                            >
-                                {processing ? "..." : "Aceptar"}
-                            </button>
-                        </div>
+                <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+                    <h1 className="text-2xl font-bold text-gray-900">
+                        Order Details #{id}
+                    </h1>
+
+                    <div className="flex gap-3">
+                        <button
+                            onClick={handleReject}
+                            disabled={processing || order?.accepted === true}
+                            className={`px-4 py-2 rounded-lg font-semibold transition-colors ${
+                                processing || order?.accepted === true
+                                    ? "bg-gray-300 cursor-not-allowed"
+                                    : "bg-red-600 hover:bg-red-700 text-white"
+                            }`}
+                        >
+                            {processing ? "..." : "Reject"}
+                        </button>
+
+                        <button
+                            onClick={handleAccept}
+                            disabled={processing || order?.accepted === true}
+                            className={`px-4 py-2 rounded-lg font-semibold transition-colors ${
+                                processing || order?.accepted === true
+                                    ? "bg-gray-300 cursor-not-allowed"
+                                    : "bg-green-600 hover:bg-green-700 text-white"
+                            }`}
+                        >
+                            {processing ? "..." : "Accept"}
+                        </button>
                     </div>
                 </div>
             </div>
 
-            {/* Contenido principal */}
+            {/* Content */}
             <div className="max-w-7xl mx-auto px-4 py-6">
-                {/* Estado de la orden */}
+
+                {/* Status */}
                 <div className="mb-6">
-                    <span className={`
-                        inline-block px-3 py-1 rounded-full text-sm font-semibold
-                        ${order?.accepted === true 
-                            ? 'bg-green-100 text-green-800' 
+                    <span className={`inline-block px-3 py-1 rounded-full text-sm font-semibold ${
+                        order?.accepted === true
+                            ? "bg-green-100 text-green-800"
                             : order?.accepted === false
-                                ? 'bg-red-100 text-red-800'
-                                : 'bg-yellow-100 text-yellow-800'
-                        }
-                    `}>
-                        {order?.accepted === true && "Aceptada"}
-                        {order?.accepted === false && "Rechazada"}
-                        {(order?.accepted === null || order?.accepted === undefined) && "Pendiente"}
+                                ? "bg-red-100 text-red-800"
+                                : "bg-yellow-100 text-yellow-800"
+                    }`}>
+                        {order?.accepted === true && "Accepted"}
+                        {order?.accepted === false && "Rejected"}
+                        {order?.accepted == null && "Pending"}
                     </span>
                 </div>
 
-                {/* Grid de información */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* Información de la orden */}
-                    <div className="bg-white rounded shadow p-5">
+
+                    <div className="bg-white rounded-2xl shadow p-5">
                         <h2 className="text-lg font-semibold mb-3 border-b pb-2">
-                            Información de la Orden
+                            Order Information
                         </h2>
+
                         <div className="space-y-2">
-                            <div>
-                                <label className="text-sm text-gray-500">ID de Orden</label>
-                                <p className="text-gray-900">{order?.id}</p>
-                            </div>
-                            <div>
-                                <label className="text-sm text-gray-500">Tipo de Movimiento</label>
-                                <p className="text-gray-900">{order?.movementData?.type || "-"}</p>
-                            </div>
-                            <div>
-                                <label className="text-sm text-gray-500">Cantidad</label>
-                                <p className="text-gray-900">{order?.movementData?.quantity || "-"}</p>
-                            </div>
-                            <div>
-                                <label className="text-sm text-gray-500">Prioridad</label>
-                                <p className="text-gray-900">{order?.priority || "-"}</p>
-                            </div>
+                            <p><span className="text-gray-500 text-sm">Order ID:</span> {order?.id}</p>
+                            <p><span className="text-gray-500 text-sm">Movement Type:</span> {order?.movementData?.type || "-"}</p>
+                            <p><span className="text-gray-500 text-sm">Quantity:</span> {order?.movementData?.quantity || "-"}</p>
+                            <p><span className="text-gray-500 text-sm">Priority:</span> {order?.priority || "-"}</p>
                         </div>
                     </div>
 
-                    {/* Información del producto */}
-                    <div className="bg-white rounded shadow p-5">
+                    <div className="bg-white rounded-2xl shadow p-5">
                         <h2 className="text-lg font-semibold mb-3 border-b pb-2">
-                            Información del Producto
+                            Product Information
                         </h2>
+
                         <div className="space-y-2">
-                            <div>
-                                <label className="text-sm text-gray-500">Nombre</label>
-                                <p className="text-gray-900">{product?.name || "-"}</p>
-                            </div>
-                            <div>
-                                <label className="text-sm text-gray-500">Descripción</label>
-                                <p className="text-gray-700">{product?.description || "-"}</p>
-                            </div>
+                            <p><span className="text-gray-500 text-sm">Name:</span> {product?.name || "-"}</p>
+                            <p><span className="text-gray-500 text-sm">Description:</span> {product?.description || "-"}</p>
                             {product?.sku && (
-                                <div>
-                                    <label className="text-sm text-gray-500">SKU</label>
-                                    <p className="text-gray-900">{product.sku}</p>
-                                </div>
+                                <p><span className="text-gray-500 text-sm">SKU:</span> {product.sku}</p>
                             )}
                         </div>
                     </div>
 
-                    {/* Almacenes */}
-                    <div className="bg-white rounded shadow p-5">
+                    <div className="bg-white rounded-2xl shadow p-5">
                         <h2 className="text-lg font-semibold mb-3 border-b pb-2">
-                            Almacén Origen
+                            Source Warehouse
                         </h2>
+
                         {sourceWarehouse ? (
                             <div className="space-y-2">
-                                <div>
-                                    <label className="text-sm text-gray-500">Nombre</label>
-                                    <p className="text-gray-900">{sourceWarehouse.name}</p>
-                                </div>
+                                <p><span className="text-gray-500 text-sm">Name:</span> {sourceWarehouse.name}</p>
                                 {sourceWarehouse.location && (
-                                    <div>
-                                        <label className="text-sm text-gray-500">Ubicación</label>
-                                        <p className="text-gray-700">{sourceWarehouse.location}</p>
-                                    </div>
+                                    <p><span className="text-gray-500 text-sm">Location:</span> {sourceWarehouse.location}</p>
                                 )}
                             </div>
                         ) : (
-                            <p className="text-gray-500 italic">No aplica</p>
+                            <p className="text-gray-500 italic">Not applicable</p>
                         )}
                     </div>
 
-                    <div className="bg-white rounded shadow p-5">
+                    <div className="bg-white rounded-2xl shadow p-5">
                         <h2 className="text-lg font-semibold mb-3 border-b pb-2">
-                            Almacén Destino
+                            Destination Warehouse
                         </h2>
+
                         {destinationWarehouse ? (
                             <div className="space-y-2">
-                                <div>
-                                    <label className="text-sm text-gray-500">Nombre</label>
-                                    <p className="text-gray-900">{destinationWarehouse.name}</p>
-                                </div>
+                                <p><span className="text-gray-500 text-sm">Name:</span> {destinationWarehouse.name}</p>
                                 {destinationWarehouse.location && (
-                                    <div>
-                                        <label className="text-sm text-gray-500">Ubicación</label>
-                                        <p className="text-gray-700">{destinationWarehouse.location}</p>
-                                    </div>
+                                    <p><span className="text-gray-500 text-sm">Location:</span> {destinationWarehouse.location}</p>
                                 )}
                             </div>
                         ) : (
-                            <p className="text-gray-500 italic">No aplica</p>
+                            <p className="text-gray-500 italic">Not applicable</p>
                         )}
                     </div>
                 </div>
 
-                {/* Información del responsable */}
                 {order?.userResponsable && (
-                    <div className="mt-6 bg-white rounded shadow p-5">
+                    <div className="mt-6 bg-white rounded-2xl shadow p-5">
                         <h2 className="text-lg font-semibold mb-3 border-b pb-2">
-                            Responsable
+                            Responsible User
                         </h2>
+
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            <div>
-                                <label className="text-sm text-gray-500">Nombre</label>
-                                <p className="text-gray-900">{order.userResponsable.username || "-"}</p>
-                            </div>
-                            <div>
-                                <label className="text-sm text-gray-500">Email</label>
-                                <p className="text-gray-900">{order.userResponsable.email || "-"}</p>
-                            </div>
+                            <p><span className="text-gray-500 text-sm">Username:</span> {order.userResponsable.username || "-"}</p>
+                            <p><span className="text-gray-500 text-sm">Email:</span> {order.userResponsable.email || "-"}</p>
                         </div>
                     </div>
                 )}
+
             </div>
         </div>
     );

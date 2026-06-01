@@ -51,7 +51,6 @@ export default function OrdersList() {
         }
     };
 
-    // 🔥 SOLO PENDIENTES
     const pendingOrders = orders.filter(order => order.accepted === false);
 
     return (
@@ -75,7 +74,6 @@ export default function OrdersList() {
                             className={`rounded-2xl border shadow-sm p-5 flex items-center justify-between transition-all hover:shadow-lg hover:scale-[1.01] ${getPriorityStyle(order.priority)}`}
                         >
 
-                            {/* LEFT */}
                             <div className="flex flex-col gap-1">
 
                                 <h3 className="text-lg font-bold capitalize flex items-center gap-2">
@@ -92,7 +90,6 @@ export default function OrdersList() {
 
                             </div>
 
-                            {/* RIGHT */}
                             <button
                                 onClick={() => navigateToDetail(order.id)}
                                 className="bg-white px-4 py-2 rounded-xl font-semibold shadow-sm border hover:bg-gray-100 transition"

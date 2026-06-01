@@ -42,4 +42,9 @@ public class InventoryController {
     public List<Inventory> getQuantityByWarehouseDESC(@PathVariable long warehouseId) {
         return inventoryService.getQuantityByWarehouseDESC(warehouseId);
     }
+
+    @GetMapping("warehouse/{id}")
+    public List<String>findWarehousesWithProductInStock(@PathVariable long id){
+        return inventoryService.findWarehousesWithProductInStock(id);
+    }
 }

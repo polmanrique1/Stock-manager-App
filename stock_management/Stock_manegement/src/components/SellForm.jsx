@@ -89,13 +89,13 @@ export default function SellForm() {
 
         if (!user) {
             setMessageType("error");
-            setMessage("Usuario no autenticado");
+            setMessage("User not authenticated");
             return;
         }
 
         if (!formData.productId || !formData.warehouseId || !formData.quantity) {
             setMessageType("error");
-            setMessage("Por favor, completa todos los campos");
+            setMessage("Please complete all fields");
             return;
         }
 
@@ -103,16 +103,14 @@ export default function SellForm() {
         setMessage("");
         setMessageType("");
 
-        // Configuración correcta: sourceWarehouseId es el warehouse seleccionado
-        // destinationWarehouseId es null para ventas
         const bodyData = {
             priority: formData.priority,
             userId: user.id,
             movement: {
                 type: "sell",
                 productId: safeNumber(formData.productId),
-                sourceWarehouseId: safeNumber(formData.warehouseId), // ✅ Warehouse como origen
-                destinationWarehouseId: null, // ✅ Null para ventas
+                sourceWarehouseId: safeNumber(formData.warehouseId),
+                destinationWarehouseId: null,
                 quantity: safeNumber(formData.quantity)
             }
         };
@@ -131,7 +129,7 @@ export default function SellForm() {
 
             if (response.ok) {
                 setMessageType("success");
-                setMessage("✅ Orden de venta creada correctamente");
+                setMessage("Sale order created successfully");
                 setFormData({
                     priority: "LOW",
                     productId: "",
@@ -139,13 +137,12 @@ export default function SellForm() {
                     quantity: ""
                 });
             } else {
-                const errorText = await response.text();
                 setMessageType("error");
-                setMessage(`❌ Error creando la orden: ${response.status}`);
+                setMessage(`Error creating order (${response.status})`);
             }
         } catch (error) {
             setMessageType("error");
-            setMessage(`❌ Error de conexión: ${error.message}`);
+            setMessage(`Connection error: ${error.message}`);
         } finally {
             setLoading(false);
         }
@@ -155,90 +152,68 @@ export default function SellForm() {
         <div className="min-h-screen bg-gray-100 flex justify-center items-center p-8">
             <div className="bg-white w-full max-w-xl rounded-2xl shadow-lg p-8">
                 <h2 className="text-2xl font-bold text-gray-800 mb-2">
-                    Vender Producto
+                    Sell Product
                 </h2>
                 <p className="text-gray-500 text-sm mb-6">
-                    Registra una venta de inventario
+                    Register an inventory sale
                 </p>
 
                 <form onSubmit={onSubmit} className="flex flex-col gap-5">
-                    {/* Prioridad */}
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Prioridad
-                        </label>
-                        <select
-                            name="priority"
-                            value={formData.priority}
-                            onChange={handleChange}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
-                        >
-                            <option value="LOW">LOW - Baja prioridad</option>
-                            <option value="MEDIUM">MEDIUM - Prioridad media</option>
-                            <option value="HIGH">HIGH - Alta prioridad</option>
-                        </select>
-                    </div>
 
-                    {/* Producto */}
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Producto
-                        </label>
-                        <select
-                            name="productId"
-                            value={formData.productId}
-                            onChange={handleChange}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
-                        >
-                            <option value="">Selecciona un producto</option>
-                            {products.map(p => (
-                                <option key={p.id} value={p.id}>
-                                    {p.name} {p.sku ? `(${p.sku})` : ''}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
+                    {/* Priority */}
+                    <select
+                        name="priority"
+                        value={formData.priority}
+                        onChange={handleChange}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
+                    >
+                        <option value="LOW">LOW</option>
+                        <option value="MEDIUM">MEDIUM</option>
+                        <option value="HIGH">HIGH</option>
+                    </select>
 
-                    {/* Almacén de origen */}
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Almacén de origen
-                        </label>
-                        <select
-                            name="warehouseId"
-                            value={formData.warehouseId}
-                            onChange={handleChange}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
-                        >
-                            <option value="">Selecciona un almacén</option>
-                            {warehouses.map(w => (
-                                <option key={w.id} value={w.id}>
-                                    {w.name} {w.location ? `- ${w.location}` : ''}
-                                </option>
-                            ))}
-                        </select>
-                        <p className="text-xs text-gray-500 mt-1">
-                            El stock se retirará de este almacén
-                        </p>
-                    </div>
+                    {/* Product */}
+                    <select
+                        name="productId"
+                        value={formData.productId}
+                        onChange={handleChange}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
+                    >
+                        <option value="">Select a product</option>
+                        {products.map(p => (
+                            <option key={p.id} value={p.id}>
+                                {p.name}
+                            </option>
+                        ))}
+                    </select>
 
-                    {/* Cantidad */}
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Cantidad
-                        </label>
-                        <input
-                            type="number"
-                            name="quantity"
-                            value={formData.quantity}
-                            onChange={handleChange}
-                            placeholder="Ej: 10"
-                            min="1"
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                        />
-                    </div>
+                    {/* Warehouse */}
+                    <select
+                        name="warehouseId"
+                        value={formData.warehouseId}
+                        onChange={handleChange}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
+                    >
+                        <option value="">Select a warehouse</option>
+                        {warehouses.map(w => (
+                            <option key={w.id} value={w.id}>
+                                {w.name}
+                            </option>
+                        ))}
+                    </select>
 
-                    {/* Botón submit */}
+                    {/* Quantity */}
+                    <input
+                        type="number"
+                        name="quantity"
+                        value={formData.quantity}
+                        onChange={handleChange}
+                        placeholder="Quantity"
+                        min="1"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    />
+
+                    {/* Button */}
                     <button
                         type="submit"
                         disabled={loading || !user}
@@ -250,14 +225,14 @@ export default function SellForm() {
                             }
                         `}
                     >
-                        {loading ? "Procesando..." : "Crear Orden de Venta"}
+                        {loading ? "Processing..." : "Create Sale Order"}
                     </button>
 
-                    {/* Mensaje */}
+                    {/* Message */}
                     {message && (
                         <div className={`
                             p-3 rounded-lg text-sm text-center
-                            ${messageType === 'success' 
+                            ${messageType === 'success'
                                 ? 'bg-green-100 text-green-700 border border-green-200'
                                 : 'bg-red-100 text-red-700 border border-red-200'
                             }
@@ -266,10 +241,10 @@ export default function SellForm() {
                         </div>
                     )}
 
-                    {/* Info usuario */}
+                    {/* User info */}
                     {user && (
                         <div className="text-center text-xs text-gray-400 pt-4 border-t">
-                            Creando orden como: {user.email}
+                            Creating order as: {user.email}
                         </div>
                     )}
                 </form>

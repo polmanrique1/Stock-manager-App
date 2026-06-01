@@ -76,4 +76,9 @@ public class InventoryService {
     public List<Inventory> getQuantityByWarehouseDESC(long id) {
         return inventoryRepository.findProductsByWarehouseIdOrderByQuantityDesc(id);
     }
+
+    @Transactional(readOnly = true)
+    public List<String>findWarehousesWithProductInStock(long productId){
+        return inventoryRepository.findWarehousesWithProductInStock(productId);
+    }
 }

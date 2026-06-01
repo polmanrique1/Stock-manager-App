@@ -6,7 +6,6 @@ export default function CreateWarehouseModal({
     onWarehouseCreated
 }) {
 
-    // Warehouse structure
     const [formData, setFormData] = useState({
         name: "",
         location: "",
@@ -29,64 +28,48 @@ export default function CreateWarehouseModal({
     const handleSubmit = async (e) => {
 
         e.preventDefault();
+        const token = localStorage.getItem("token");
 
-        try {
+        console.log("TOKEN:", token);
 
-            const token = localStorage.getItem("token");
-
-            console.log("TOKEN:", token);
-
-            const response = await fetch(
-                "http://localhost:8080/warehouse",
-                {
-                    method: "POST",
-                    headers: {
-                        "Authorization": `Bearer ${token}`,
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        name: formData.name,
-                        location: formData.location,
-                        phoneNumber: formData.phoneNumber,
-                        contactMail: formData.contactMail
-                    })
-                }
-            );
-
-            if (!response.ok) {
-
-                const errorText = await response.text();
-
-                console.log(errorText);
-
-                throw new Error("Error creando warehouse");
+        const response = await fetch("http://localhost:8080/warehouse",{
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    name: formData.name,
+                    location: formData.location,
+                    phoneNumber: formData.phoneNumber,
+                    contactMail: formData.contactMail
+                })
             }
+        );
 
-            const responseData = await response.json();
+        if (!response.ok) {
+            const errorText = await response.text();
+        }
 
-            console.log("RESPUESTA:", responseData);
+        const responseData = await response.json();
 
-            const createdWarehouse =
-                responseData.data ||
-                responseData.object ||
-                responseData.warehouse ||
-                responseData;
 
-            onWarehouseCreated(createdWarehouse);
+        const createdWarehouse =
+            responseData.data ||
+            responseData.object ||
+            responseData.warehouse ||
+            responseData;
 
-            setFormData({
+        onWarehouseCreated(createdWarehouse);
+
+        setFormData({
                 name: "",
                 location: "",
                 phoneNumber: "",
                 contactMail: ""
-            });
+        });
 
-            onClose();
-
-        } catch (error) {
-
-            console.error(error);
-        }
+        onClose();
     };
 
     return (
@@ -98,7 +81,7 @@ export default function CreateWarehouseModal({
                 <div className="flex justify-between items-center mb-6">
 
                     <h2 className="text-3xl font-bold text-gray-800">
-                        Nuevo Warehouse
+                        New Warehouse
                     </h2>
 
                     <button
@@ -118,7 +101,7 @@ export default function CreateWarehouseModal({
                     <input
                         type="text"
                         name="name"
-                        placeholder="Nombre del warehouse"
+                        placeholder="Warehouse name"
                         value={formData.name}
                         onChange={handleChange}
                         className="border rounded-xl p-3"
@@ -128,7 +111,7 @@ export default function CreateWarehouseModal({
                     <input
                         type="text"
                         name="location"
-                        placeholder="Ubicación"
+                        placeholder="Location"
                         value={formData.location}
                         onChange={handleChange}
                         className="border rounded-xl p-3"
@@ -138,7 +121,7 @@ export default function CreateWarehouseModal({
                     <input
                         type="text"
                         name="phoneNumber"
-                        placeholder="Número de teléfono"
+                        placeholder="Phone number"
                         value={formData.phoneNumber}
                         onChange={handleChange}
                         className="border rounded-xl p-3"
@@ -148,7 +131,7 @@ export default function CreateWarehouseModal({
                     <input
                         type="email"
                         name="contactMail"
-                        placeholder="Correo de contacto"
+                        placeholder="Contact email"
                         value={formData.contactMail}
                         onChange={handleChange}
                         className="border rounded-xl p-3"
@@ -159,7 +142,7 @@ export default function CreateWarehouseModal({
                         type="submit"
                         className="bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-xl font-semibold transition"
                     >
-                        Crear Warehouse
+                        Create Warehouse
                     </button>
 
                 </form>

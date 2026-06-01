@@ -26,11 +26,10 @@ export default function ProductList() {
             );
 
             if (!response.ok) {
-                throw new Error("Error cargando almacenes");
+                throw new Error("Error loading warehouses");
             }
 
             const data = await response.json();
-
             setWarehouses(data);
         }
 
@@ -46,7 +45,6 @@ export default function ProductList() {
 
             let endpoint = `http://localhost:8080/inventory/${selectedWarehouse}`;
 
-            // FILTROS
             if (sortOrder === "asc") {
                 endpoint = `http://localhost:8080/inventory/${selectedWarehouse}/qnt/asc`;
             }
@@ -63,11 +61,10 @@ export default function ProductList() {
             });
 
             if (!response.ok) {
-                throw new Error("Error cargando productos");
+                throw new Error("Error loading products");
             }
 
             const data = await response.json();
-
             setProducts(data);
         }
 
@@ -76,71 +73,62 @@ export default function ProductList() {
     }, [selectedWarehouse, sortOrder]);
 
     return (
-
         <div className="min-h-screen bg-gray-100 p-8">
-
             <div className="max-w-5xl mx-auto">
 
-                <h2 className="text-4xl font-bold mb-8 text-gray-800">
-                    Lista de Productos
+                {/* Header */}
+                <h2 className="text-3xl font-bold mb-8 text-gray-800">
+                    Product List
                 </h2>
 
-                {/* SELECT + FILTROS */}
+                {/* Filters */}
                 <div className="mb-8 flex flex-col md:flex-row md:items-center gap-4">
 
-                    {/* SELECT ALMACÉN */}
+                    {/* Warehouse select */}
                     <select
                         value={selectedWarehouse}
                         onChange={(e) => setSelectedWarehouse(e.target.value)}
-                        className="w-full md:w-80 p-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white"
+                        className="w-full md:w-80 p-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
                     >
-
                         {warehouses.map((warehouse) => (
-
-                            <option
-                                key={warehouse.id}
-                                value={warehouse.id}
-                            >
+                            <option key={warehouse.id} value={warehouse.id}>
                                 {warehouse.name}
                             </option>
-
                         ))}
-
                     </select>
 
-                    {/* BOTONES FILTRO */}
+                    {/* Sort buttons */}
                     <div className="flex gap-3">
 
                         <button
                             onClick={() => setSortOrder("asc")}
-                            className={`px-4 py-2 rounded-xl transition font-medium
-                                ${sortOrder === "asc"
+                            className={`px-4 py-2 rounded-xl transition font-medium ${
+                                sortOrder === "asc"
                                     ? "bg-blue-600 text-white"
                                     : "bg-white border hover:bg-gray-50"
-                                }`}
+                            }`}
                         >
                             Stock ↑
                         </button>
 
                         <button
                             onClick={() => setSortOrder("desc")}
-                            className={`px-4 py-2 rounded-xl transition font-medium
-                                ${sortOrder === "desc"
+                            className={`px-4 py-2 rounded-xl transition font-medium ${
+                                sortOrder === "desc"
                                     ? "bg-blue-600 text-white"
                                     : "bg-white border hover:bg-gray-50"
-                                }`}
+                            }`}
                         >
                             Stock ↓
                         </button>
 
-                        {/* RESET */}
                         <button
                             onClick={() => setSortOrder("")}
-                            className={`px-4 py-2 rounded-xl transition font-medium
-                                ${sortOrder === ""
+                            className={`px-4 py-2 rounded-xl transition font-medium ${
+                                sortOrder === ""
                                     ? "bg-black text-white"
                                     : "bg-white border hover:bg-gray-50"
-                                }`}
+                            }`}
                         >
                             Reset
                         </button>
@@ -149,30 +137,27 @@ export default function ProductList() {
 
                 </div>
 
-                {/* LISTA */}
+                {/* List */}
                 <div className="flex flex-col gap-4">
 
                     {products.map((inventory, index) => (
 
                         <div
                             key={inventory.id || index}
-                            className="bg-white rounded-2xl shadow-md p-4 flex items-center gap-5 hover:shadow-lg transition duration-300"
+                            className="bg-white rounded-2xl shadow-md p-4 flex items-center gap-5 hover:shadow-lg transition"
                         >
 
-                            {/* IMAGEN */}
+                            {/* Image */}
                             <div className="w-28 h-28 flex-shrink-0 overflow-hidden rounded-xl">
-
                                 <img
                                     src={inventory.product.img}
                                     alt={inventory.product.name}
                                     className="w-full h-full object-cover"
                                 />
-
                             </div>
 
-                            {/* INFO */}
+                            {/* Info */}
                             <div className="flex-1">
-
                                 <h3 className="text-2xl font-semibold text-gray-800">
                                     {inventory.product.name}
                                 </h3>
@@ -180,12 +165,10 @@ export default function ProductList() {
                                 <p className="text-gray-500 mt-1">
                                     {inventory.product.description}
                                 </p>
-
                             </div>
 
-                            {/* PRECIO Y STOCK */}
+                            {/* Price + Stock */}
                             <div className="text-right">
-
                                 <p className="text-2xl font-bold text-blue-600">
                                     {inventory.product.price}€
                                 </p>
@@ -193,7 +176,6 @@ export default function ProductList() {
                                 <p className="text-gray-700 mt-2">
                                     Stock: {inventory.quantity}
                                 </p>
-
                             </div>
 
                         </div>
@@ -203,7 +185,6 @@ export default function ProductList() {
                 </div>
 
             </div>
-
         </div>
     );
 }

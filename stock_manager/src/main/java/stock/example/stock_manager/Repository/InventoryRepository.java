@@ -74,11 +74,10 @@ public interface InventoryRepository
             @Param("warehouse") Warehouse warehouse
     );
 
-
     @Query("""
     SELECT w.name
     FROM Inventory y
-    INNER JOIN Warehouses w ON w.id = y.warehouse.id
+    JOIN y.warehouse w
     WHERE y.product.id = :productId
     """)
     List<String> findWarehousesWithProductInStock(@Param("productId") Long productId);
